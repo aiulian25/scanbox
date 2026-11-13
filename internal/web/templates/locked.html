@@ -1,0 +1,12 @@
+{{define "content"}}
+<main class="signin locked">
+  <section class="panel">
+    <p class="brand"><span class="brand-mark">{{template "icon-logo"}}</span><span class="brand-name">Scan Box</span></p>
+    <h1 class="title">This page is locked</h1>
+    <p class="panel-note warn">{{.Lock.Detail}}</p>
+    <p class="muted small">{{.Lock.Help}}</p>
+    {{if .Lock.Snippet}}<div class="snippet"><pre>{{.Lock.Snippet}}</pre><button class="copy" type="button">Copy</button></div>{{end}}
+    <p class="hint">The scanner's own buttons keep working meanwhile.</p>
+  </section>
+</main>
+{{end}}

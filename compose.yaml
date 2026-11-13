@@ -1,0 +1,57 @@
+# Scan Box, from the published image. Needs a .env next to this file: copy .env.example and
+# fill it in. Put the Paperless token in paperless-token.txt and a password for the page in
+# scanbox-password.txt, next to this file. Scan Box runs as user 10001, which must be able to
+# read both files:
+#   sudo chown 10001 paperless-token.txt scanbox-password.txt
+#   sudo chmod 400 paperless-token.txt scanbox-password.txt
+# Without a password it can read, the page stays locked.
+# The scans live in a volume made once, before the first start, which Compose never deletes:
+#   docker volume create scanbox_scanbox-data
+# Then: docker compose up -d
+services:
+  scanbox:
+    # The newest 0.x, or the image SCANBOX_IMAGE in .env names. It never upgrades by itself:
+    # run "docker compose pull && docker compose up -d" when you choose to.
+    image: ${SCANBOX_IMAGE:-ghcr.io/aiulian25/scanbox:0}
+    container_name: scanbox
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${SCANBOX_ADDRESS:?put SCANBOX_ADDRESS, the address to publish the page on, in .env next to compose.yaml}:28761:28761"
+    volumes:
+      - scanbox-data:/data
+      - /dev/bus/usb:/dev/bus/usb:ro   # the host's live USB devices, so a replugged scanner is seen
+    device_cgroup_rules:
+      - "c 189:* rw"                   # may open USB devices; creating device files isn't needed
+    group_add:
+      - "${SCANNER_GID:?put SCANNER_GID, the group of the scanner's device file, in .env next to compose.yaml}"
+    environment:
+      PAPERLESS_TOKEN_FILE: /run/secrets/paperless_token
+      SCANBOX_PASSWORD_FILE: /run/secrets/scanbox_password
+      GOMEMLIMIT: 640MiB               # Go collects harder before mem_limit is reached
+    secrets:
+      - paperless_token
+      - scanbox_password
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 768m                    # one colour page at 600 dpi needs about 150 MB
+    pids_limit: 128
+    logging:                           # rotated here, whatever this box's own Docker settings say
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+secrets:
+  paperless_token:
+    file: ./paperless-token.txt
+  scanbox_password:
+    file: ./scanbox-password.txt
+
+volumes:
+  scanbox-data:
+    external: true                     # Compose never deletes it, not even with down -v
+    name: scanbox_scanbox-data

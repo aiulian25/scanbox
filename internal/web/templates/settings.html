@@ -1,0 +1,173 @@
+{{define "content"}}
+<main class="workspace single settings">
+  <p class="hint">Changes are saved as you make them.</p>
+  {{with .SettingsDamaged}}<p class="panel-note warn">{{.}}</p>{{end}}
+
+  <section class="panel" id="paperless">
+    <h2 class="title">Paperless</h2>
+    <div class="field">
+      <label for="paperless_url">Address</label>
+      <div class="field-row">
+        <input id="paperless_url" type="url" value="{{.Settings.PaperlessURL}}" placeholder="https://paperless.example.com" data-field="paperless_url">
+        <button type="button" data-test-paperless>Test connection</button>
+        <span class="saved">Saved</span>
+      </div>
+      <p class="error-text small" data-error hidden></p>
+      <p class="result small" data-test-result hidden></p>
+    </div>
+    <div class="field">
+      <span class="label">Token</span>
+      <p class="muted">{{if .TokenSet}}Set by the container.{{else}}Not set yet. See Container setup below.{{end}}</p>
+    </div>
+    <div class="field">
+      <span class="label">Date in Paperless</span>
+      <div class="field-row">
+        <label class="choice"><input type="checkbox" data-field="send_scan_date" {{if .Settings.SendScanDate}}checked{{end}}> Date each document by the day it was scanned</label>
+        <span class="saved">Saved</span>
+      </div>
+      <p class="muted small">Left off, Paperless dates documents itself: by a date it reads in them, or else the day they arrive.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">Scanning</h2>
+    <fieldset>
+      <legend>Resolution</legend>
+      {{range .Resolutions}}<label class="choice"><input type="radio" name="resolution_dpi" value="{{.}}" data-field="resolution_dpi" {{if eq . $.Settings.ResolutionDPI}}checked{{end}}> {{.}} dpi <span class="muted small">{{resolutionNote .}}</span></label>{{end}}
+    </fieldset>
+    <fieldset>
+      <legend>Paper size</legend>
+      {{range .PaperSizes}}<label class="choice"><input type="radio" name="paper_size" value="{{.}}" data-field="paper_size" {{if eq . $.Settings.PaperSize}}checked{{end}}> {{paperLabel .}}</label>{{end}}
+    </fieldset>
+    <fieldset>
+      <legend>Page direction</legend>
+      <label class="choice"><input type="checkbox" data-field="turn_pages" {{if .Settings.TurnPages}}checked{{end}}> Turn every scan upside down</label>
+      <p class="muted small">Tick this if scans come out upside down when you place pages the way you like.</p>
+    </fieldset>
+    <fieldset>
+      <legend>Greyscale pages</legend>
+      <label class="choice"><input type="radio" name="grey_storage" value="compact" data-field="grey_storage" {{if eq .Settings.GreyStorage "compact"}}checked{{end}}> Compact</label>
+      <label class="choice"><input type="radio" name="grey_storage" value="lossless" data-field="grey_storage" {{if eq .Settings.GreyStorage "lossless"}}checked{{end}}> Lossless <span class="muted small">about 3 times larger</span></label>
+    </fieldset>
+    <span class="saved">Saved</span>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><h2 class="title">Scanner buttons</h2><span class="saved">Saved</span></div>
+    <p class="muted small">In the same order as on the scanner, from left to right. The first two share one "PDF" label: PDF is the left one, PDF finish the right one (marked ▶|).</p>
+    <div class="strip">
+      {{range .Buttons}}
+      <div class="key">
+        <span class="cap">{{.Label}}</span>
+        <select data-field="button.{{.Name}}" aria-label="{{.Label}} button">
+          {{$current := .Current}}{{range $.Actions}}<option value="{{.}}" {{if eq . $current}}selected{{end}}>{{actionLabel .}}</option>{{end}}
+        </select>
+      </div>
+      {{end}}
+    </div>
+  </section>
+
+  <section class="panel" id="date-time">
+    <div class="panel-head"><h2 class="title">Date and time</h2><span class="saved">Saved</span></div>
+    <div class="field">
+      <label for="time_zone">Time zone</label>
+      <select id="time_zone" data-field="time_zone" data-date-time>
+        <optgroup label="Europe">
+          {{range .DateTime.Zones}}<option value="{{.Value}}" {{if .Selected}}selected{{end}}>{{.Label}}</option>{{end}}
+        </optgroup>
+      </select>
+      <p class="muted small" data-zone-note>{{.DateTime.ZoneNote}}</p>
+      <p class="error-text small" data-error hidden></p>
+    </div>
+    <div class="field">
+      <label for="date_style">Dates look like</label>
+      <select id="date_style" data-field="date_style" data-date-time>
+        {{range .DateTime.Dates}}<option value="{{.Value}}" {{if .Selected}}selected{{end}}>{{.Label}}</option>{{end}}
+      </select>
+    </div>
+    <div class="field">
+      <label for="time_style">Times look like</label>
+      <select id="time_style" data-field="time_style" data-date-time>
+        {{range .DateTime.Times}}<option value="{{.Value}}" {{if .Selected}}selected{{end}}>{{.Label}}</option>{{end}}
+      </select>
+    </div>
+    <dl class="preview-box" aria-live="polite">
+      <div>
+        <dt>On the Scans page</dt>
+        <dd class="preview-heading" data-preview="heading">{{.DateTime.Heading}}</dd>
+        <dd data-preview="row">{{.DateTime.Row}}</dd>
+      </div>
+      <div>
+        <dt>Under Recent scans, for an older scan</dt>
+        <dd data-preview="recent">{{.DateTime.Recent}}</dd>
+      </div>
+      <div>
+        <dt>Name of a new scan</dt>
+        <dd data-preview="name">{{.DateTime.Name}}</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">Documents</h2>
+    <label class="choice"><input type="checkbox" data-field="review_before_sending" {{if .Settings.ReviewBeforeSending}}checked{{end}}> Let me name each scan before it is sent</label>
+    <div class="field">
+      <label for="name_template">Suggested name</label>
+      <div class="field-row">
+        <input id="name_template" type="text" value="{{.Settings.NameTemplate}}" data-field="name_template">
+        <span class="saved">Saved</span>
+      </div>
+      <p class="muted small"><code>{date}</code> and <code>{time}</code> are filled in when a scan is finished, as chosen under Date and time.</p>
+      <p class="error-text small" data-error hidden></p>
+    </div>
+    <div class="field">
+      <label for="idle_finish_minutes">Finish a document by itself</label>
+      <div class="field-row"><input id="idle_finish_minutes" type="number" min="1" max="240" value="{{.Settings.IdleFinishMinutes}}" data-field="idle_finish_minutes"> <span>minutes after its last page</span> <span class="saved">Saved</span></div>
+      <p class="error-text small" data-error hidden></p>
+    </div>
+    <div class="field">
+      <label for="keep_sent_days">Keep scans after sending</label>
+      <div class="field-row">
+        <select id="keep_sent_days" data-field="keep_sent_days">
+          {{range .KeepChoices}}<option value="{{.}}" {{if eq . $.Settings.KeepSentDays}}selected{{end}}>{{keepLabel .}}</option>{{end}}
+        </select>
+        <span class="saved">Saved</span>
+      </div>
+      <p class="muted small">{{.Usage}} Deleting a scan here never touches Paperless.</p>
+      <p class="error-text small" data-error hidden></p>
+    </div>
+    <div class="field">
+      <label for="reserve_mb">Keep free on the box</label>
+      <div class="field-row">
+        <select id="reserve_mb" data-field="reserve_mb">
+          {{range .ReserveChoices}}<option value="{{.}}" {{if eq . $.Settings.ReserveMB}}selected{{end}}>{{reserveLabel .}}</option>{{end}}
+        </select>
+        <span class="saved">Saved</span>
+      </div>
+      <p class="muted small">Scanning stops while less is free, and the status line warns well before.</p>
+      <p class="error-text small" data-error hidden></p>
+    </div>
+  </section>
+
+  <section class="panel" id="setup">
+    <div class="panel-head">
+      <h2 class="title">Container setup</h2>
+      <span class="muted small">{{if .Missing}}{{plural .Missing "item" "items"}} to add{{else}}All done{{end}}</span>
+    </div>
+    <p class="muted small">These come from the container, not from this page. If one is missing, add the lines shown to your compose file, then run <code>docker compose up -d</code>.</p>
+    <ul class="checks">
+      {{range .Checks}}
+      <li>
+        <div class="check-head"><span>{{.Title}}</span><span class="state {{if .OK}}ok{{else}}warn{{end}}">{{.Detail}}</span></div>
+        {{if .Help}}<p class="muted small">{{.Help}}</p>{{end}}
+        {{if .Snippet}}<div class="snippet"><pre>{{.Snippet}}</pre><button class="copy" type="button">Copy</button></div>{{end}}
+      </li>
+      {{end}}
+    </ul>
+    <details>
+      <summary>Full compose file, for a new box</summary>
+      <div class="snippet"><pre>{{.FullCompose}}</pre><button class="copy" type="button">Copy</button></div>
+    </details>
+  </section>
+</main>
+{{end}}

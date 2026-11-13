@@ -1,0 +1,50 @@
+{{define "content"}}
+<main class="workspace single">
+  <section class="panel">
+    <form class="search-form" method="get" action="/scans" role="search">
+      <div class="field-block">
+        <label class="field-label" for="q">Search</label>
+        <div class="search-row">
+          <input class="mono" id="q" name="q" type="search" value="{{.Search.Text}}" placeholder="A name, or a date like {{.Search.Example}}" autocomplete="off">
+          <button class="button primary" type="submit">{{template "icon-search"}} Search</button>
+        </div>
+      </div>
+      <div class="filters">
+        <label class="filter"><span class="field-label">When</span>
+          <select name="period" data-submit>
+            {{range .Search.Periods}}<option value="{{.Value}}" {{if eq .Value $.Search.Period}}selected{{end}}>{{.Label}}</option>{{end}}
+          </select>
+        </label>
+        <label class="filter"><span class="field-label">From</span> <input class="mono" name="from" type="text" placeholder="{{.Search.Example}}" value="{{.Search.From}}" size="11"></label>
+        <label class="filter"><span class="field-label">To</span> <input class="mono" name="to" type="text" placeholder="{{.Search.Example}}" value="{{.Search.To}}" size="11"></label>
+        <label class="filter"><span class="field-label">State</span>
+          <select name="state" data-submit>
+            {{range .Search.States}}<option value="{{.Value}}" {{if eq .Value $.Search.State}}selected{{end}}>{{.Label}}</option>{{end}}
+          </select>
+        </label>
+      </div>
+      {{if .Search.Problem}}<p class="error-text">{{.Search.Problem}}</p>{{end}}
+    </form>
+  </section>
+
+  {{if .Search.Months}}
+  <nav class="months" aria-label="Scans by month">
+    {{range .Search.Months}}<a href="/scans?month={{.Param}}" {{if .Current}}aria-current="true"{{end}}>{{.Label}} <span class="tree-count">{{.Count}}</span></a>{{end}}
+  </nav>
+  {{end}}
+
+  <p class="result-count mono">{{plural .Search.Count "scan" "scans"}}{{if .Search.Filtered}} found · <a class="text-link" href="/scans">Show all</a>{{end}}</p>
+
+  {{range .Search.Days}}
+  <section class="panel">
+    <h2 class="title">{{.Heading}}</h2>
+    <ul class="rows">{{range .Documents}}{{template "scan-row" .}}{{end}}</ul>
+  </section>
+  {{else}}
+  {{if .Search.Filtered}}<p class="empty">Nothing matches. Try fewer words, or another date.</p>{{end}}
+  {{end}}
+
+  <p class="hint">{{.Usage}}</p>
+</main>
+{{template "dialogs" .}}
+{{end}}

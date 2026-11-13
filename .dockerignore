@@ -1,0 +1,5 @@
+# Only what the Dockerfile copies reaches the builder: no secrets, data or notes by mistake.
+**
+!go.mod
+!cmd/
+!internal/

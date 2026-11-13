@@ -1,0 +1,14 @@
+{{define "content"}}
+<main class="signin">
+  <form class="panel" method="post" action="/signin">
+    <p class="brand"><span class="brand-mark">{{template "icon-logo"}}</span><span class="brand-name">Scan Box</span></p>
+    <div class="field-block">
+      <label class="field-label" for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" autofocus required>
+      {{if .Error}}<p class="error-text">{{.Error}}</p>{{end}}
+    </div>
+    <button class="button primary" type="submit">Sign in</button>
+    <p class="hint">The password is set in the container's environment.</p>
+  </form>
+</main>
+{{end}}

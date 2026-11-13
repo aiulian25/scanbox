@@ -1,0 +1,14 @@
+{{define "content"}}
+<main class="workspace">
+  <div class="column">
+    <div data-live="setup-notice">{{template "setup-notice" .}}</div>
+    <div data-live="controls">{{template "controls" .}}</div>
+    <div data-live="glass">{{template "glass" .}}</div>
+  </div>
+  <div class="column">
+    <div data-live="review" data-key="{{.ReviewKey}}">{{template "review" .}}</div>
+    <div data-live="recent">{{template "recent" .}}</div>
+  </div>
+</main>
+{{template "dialogs" .}}
+{{end}}

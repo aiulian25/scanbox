@@ -1,0 +1,51 @@
+{{define "layout"}}<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>{{.Title}} · Scan Box</title>
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body data-page="{{.Page}}">
+{{if .SignedIn}}
+<header class="topbar">
+  <div class="topbar-start">
+    <a class="brand" href="/">
+      <span class="brand-mark">{{template "icon-logo"}}</span>
+      <span class="brand-name">Scan Box</span>
+    </a>
+    {{if .BuildID}}<span class="tag mono" title="{{.BuildNote}}">{{.Release}} · build {{.BuildID}}</span>{{end}}
+    <nav class="nav" aria-label="Pages">
+      <a href="/" {{if eq .Page "scanner"}}aria-current="page"{{end}}>Scanner</a>
+      <a href="/scans" {{if eq .Page "scans"}}aria-current="page"{{end}}>Scans</a>
+      <a href="/settings" {{if eq .Page "settings"}}aria-current="page"{{end}}>Settings</a>
+    </nav>
+  </div>
+  <div class="topbar-end">
+    <div data-live="badge">{{template "badge" .}}</div>
+    {{if .PasswordSet}}<form class="sign-out" method="post" action="/signout"><button class="quiet-link" type="submit">Sign out</button></form>{{end}}
+  </div>
+</header>
+<div class="shell{{if .ShowArchive}} with-archive{{end}}">
+  {{if .ShowArchive}}
+  <aside class="archive" aria-label="Scan archive">
+    <div class="archive-head">
+      <div class="archive-title">
+        <span class="eyebrow">{{template "icon-calendar"}} Scan archive</span>
+        <span data-live="archive-count">{{template "archive-count" .}}</span>
+      </div>
+      <input class="archive-filter mono" type="search" placeholder="Filter by name, date or time" aria-label="Filter the archive" autocomplete="off" data-archive-filter>
+    </div>
+    <div class="archive-body" data-live="archive">{{template "archive" .}}</div>
+  </aside>
+  {{end}}
+  {{template "content" .}}
+</div>
+<footer class="statusbar mono" data-live="footer">{{template "footer" .}}</footer>
+{{else}}
+{{template "content" .}}
+{{end}}
+</body>
+</html>{{end}}

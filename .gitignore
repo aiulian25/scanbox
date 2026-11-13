@@ -1,0 +1,15 @@
+# A real install's secrets and settings
+paperless-token.txt
+scanbox-password.txt
+.env
+.env.*
+!.env.example
+# Local only: the dev compose file, the release runbook, backups, notes and tools' state
+compose.dev.yaml
+build and push.md
+/backup/
+/dev-data/
+.claude/
+docs/PLAN.md
+docs/mockup*.html
+docs/screenshot-tools/
