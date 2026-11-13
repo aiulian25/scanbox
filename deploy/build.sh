@@ -16,8 +16,9 @@ BUILD_ID_LENGTH=7
 PROGRAM=/usr/local/bin/scanbox
 
 epoch=$(find "$PROJECT/go.mod" "$PROJECT/cmd" "$PROJECT/internal" "$PROJECT/Dockerfile" -type f -printf '%T@\n' | sort -n | tail -n 1 | cut -d. -f1)
-# On a release tag the build is that version; anywhere else it says dev.
-version=$(git -C "$PROJECT" describe --tags --exact-match 2>/dev/null | sed 's/^v//' || true)
+# On a release tag the build is that version, followed by -dirty when files differ from the
+# tag; anywhere else it says dev.
+version=$(git -C "$PROJECT" describe --tags --exact-match --dirty 2>/dev/null | sed 's/^v//' || true)
 SOURCE_DATE_EPOCH=$epoch docker build --build-arg SOURCE_DATE_EPOCH="$epoch" --build-arg VERSION="${version:-dev}" --provenance=false \
 	--output "type=image,name=$CANDIDATE,rewrite-timestamp=true" "$PROJECT" >&2
 container=$(docker create "$CANDIDATE")

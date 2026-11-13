@@ -85,8 +85,10 @@ RUN mkdir -p usr/lib/sane usr/lib64 usr/local/bin etc/sane.d etc/ssl/certs \
 	&& echo pixma > etc/sane.d/dll.conf
 # The Debian packages those files come from are recorded as distroless images record them,
 # with the release, so a vulnerability scanner such as Trivy still knows their versions.
+# Trivy knows Debian by debian_version alone; without it, it scans none of these packages.
 RUN mkdir -p var/lib/dpkg/status.d \
 	&& cp -L /etc/os-release etc/os-release \
+	&& cp /etc/debian_version etc/debian_version \
 	&& for package in ca-certificates $(find usr/lib -name '*.so*' -type f -printf '/%p\n' | xargs dpkg -S 2>/dev/null | cut -d: -f1 | sort -u); do \
 		dpkg-query -s "$package" > "var/lib/dpkg/status.d/$package"; \
 	done
